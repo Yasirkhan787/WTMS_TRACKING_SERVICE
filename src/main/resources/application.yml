@@ -1,0 +1,70 @@
+server:
+  port: 8770
+
+spring:
+  application:
+    name: tracking-service
+
+  # --- REDIS CONFIGURATION (For Point-in-Time Cache) ---
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 5
+      # password: your_password_if_any
+
+  # --- KAFKA CONFIGURATION (For Real-Time Streaming) ---
+kafka:
+  bootstrap:
+    server: localhost:9092
+  consumer:
+    group: tracking-group
+
+    # Producer (Used by your @Scheduled Polling Job)
+    #producer:
+     # key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      #value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    # Consumer (Used by your WebSocket Broadcaster)
+    #consumer:
+      #group-id: tracking-ws-group
+      #auto-offset-reset: latest # Only care about live data, ignore old messages if service restarts
+      #key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      #value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      #properties:
+        #spring.json.trusted.packages: "com.yasirkhan.tracking.models.dtos" # CRITICAL: Allows JSON mapping
+
+# --- EUREKA DISCOVERY CONFIGURATION ---
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+# --- CUSTOM APPLICATION PROPERTIES ---
+tracking:
+  api:
+    # Intentionally break the primary URL to force the fallback
+    # https://askteckbypass.onrender.com/api/asktrack/GetMultipleWMCVehiclesLiveStats
+    url: https://askteckbypass.onrender.com/api/asktrack/GetMultipleWMCVehicles
+    fallback-url: http://localhost:5000/api/fallback-coordinates
+    key: my-super-secret-key-123
+  kafka:
+    topic: "live-coordinates-topic"
+    mock-topic: "live-coordinates-mock-topic"
+
+# --- LOGGING (For Debugging WebSockets & Kafka) ---
+logging:
+  level:
+    org.springframework.web.socket: INFO
+    org.springframework.messaging: INFO
+    org.springframework.kafka: INFO
+    com.yasirkhan.tracking: DEBUG
+
+jwt:
+  public-key:
+    path: classpath:certs/public_key.pem
+app:
+  security:
+    internal-secret: yK8!pL3@xQ7#dT9$wF2^sR5&vM1*bN6(
