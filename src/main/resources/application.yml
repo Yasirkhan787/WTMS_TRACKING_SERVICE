@@ -1,5 +1,5 @@
 server:
-  port: 8770
+  port: 8766
 
 spring:
   application:
@@ -20,20 +20,6 @@ kafka:
   consumer:
     group: tracking-group
 
-    # Producer (Used by your @Scheduled Polling Job)
-    #producer:
-     # key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      #value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
-    # Consumer (Used by your WebSocket Broadcaster)
-    #consumer:
-      #group-id: tracking-ws-group
-      #auto-offset-reset: latest # Only care about live data, ignore old messages if service restarts
-      #key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      #value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      #properties:
-        #spring.json.trusted.packages: "com.yasirkhan.tracking.models.dtos" # CRITICAL: Allows JSON mapping
-
 # --- EUREKA DISCOVERY CONFIGURATION ---
 eureka:
   client:
@@ -45,9 +31,7 @@ eureka:
 # --- CUSTOM APPLICATION PROPERTIES ---
 tracking:
   api:
-    # Intentionally break the primary URL to force the fallback
-    # https://askteckbypass.onrender.com/api/asktrack/GetMultipleWMCVehiclesLiveStats
-    url: https://askteckbypass.onrender.com/api/asktrack/GetMultipleWMCVehicles
+    url: https://askteckbypass.onrender.com/api/asktrack/GetMultipleWMCVehiclesLiveStats
     fallback-url: http://localhost:5000/api/fallback-coordinates
     key: my-super-secret-key-123
   kafka:

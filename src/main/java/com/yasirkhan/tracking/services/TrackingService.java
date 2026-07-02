@@ -72,23 +72,23 @@ public class TrackingService {
     private List<VehicleData> getLatestPositionsByTehsil(String tehsilId) {
         List<VehicleData> activePositions = new ArrayList<>();
 
-        // 1. Get the LIVE keys (because we only want trucks that are currently active)
+        // Get the LIVE keys (because we only want trucks that are currently active)
         Set<String> liveVehicleKeys = redisTemplate.keys("wtms:live:vehicle:*");
 
         if (liveVehicleKeys != null) {
             for (String liveKey : liveVehicleKeys) {
 
-                // 2. Extract the Registration Number (e.g., "LES-16-217")
+                // Extract the Registration Number
                 String vehicleNo = liveKey.replace("wtms:live:vehicle:", "");
 
-                // 3. Look up the Tehsil ID in the ASSIGNMENT hash, not the live hash!
+                // Look up the Tehsil ID in the ASSIGNMENT hash, not the live hash!
                 String assignmentKey = "wtms:vehicle:" + vehicleNo;
                 Object cachedTehsilIdObj = redisTemplate.opsForHash().get(assignmentKey, "tehsilId");
                 String cachedTehsilId = cachedTehsilIdObj != null ? cachedTehsilIdObj.toString() : "";
 
                 log.debug("Vehicle: {} -> Cached Tehsil Id: {}", vehicleNo, cachedTehsilId);
 
-                // 4. If the Tehsil matches the Supervisor, grab the LIVE data and send it
+                // If the Tehsil matches the Supervisor, grab the LIVE data and send it
                 if (tehsilId.equals(cachedTehsilId)) {
                     Map<Object, Object> liveData = redisTemplate.opsForHash().entries(liveKey);
                     VehicleData dto = buildVehicleData(liveKey, liveData);
@@ -104,24 +104,20 @@ public class TrackingService {
         Object latObj = data.get("latitude");
         Object lngObj = data.get("longitude");
 
-        // We only build the DTO if we have valid coordinates
         if (latObj != null && lngObj != null) {
             VehicleData dto = new VehicleData();
 
-            // Core Identifiers
             dto.setVehicleNo(key.replace("wtms:live:vehicle:", ""));
 
             Object deviceIdObj = data.get("deviceId");
             dto.setDeviceId(deviceIdObj != null ? deviceIdObj.toString() : "");
 
-            // Location Data
             dto.setLatitude(Double.parseDouble(latObj.toString()));
             dto.setLongitude(Double.parseDouble(lngObj.toString()));
 
             Object locationObj = data.get("location");
             dto.setLocation(locationObj != null ? locationObj.toString() : "");
 
-            // Telemetry Data
             Object speedObj = data.get("speed");
             dto.setSpeed(speedObj != null ? Double.parseDouble(speedObj.toString()) : 0.0);
 
@@ -134,11 +130,9 @@ public class TrackingService {
             Object workingHoursObj = data.get("workingHours");
             dto.setWorkingHours(workingHoursObj != null ? Integer.parseInt(workingHoursObj.toString()) : 0);
 
-            // Timestamps
-            // Note: Checking "lastUpdated" as that is how your TrackingPollingJob saves it to Redis
             Object lastUpdateObj = data.get("lastUpdated");
             if (lastUpdateObj == null) {
-                lastUpdateObj = data.get("lastUpdate"); // Fallback just in case
+                lastUpdateObj = data.get("lastUpdate");
             }
             dto.setLastUpdate(lastUpdateObj != null ? lastUpdateObj.toString() : "");
 

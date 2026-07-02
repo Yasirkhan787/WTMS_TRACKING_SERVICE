@@ -34,13 +34,13 @@ public class TrackingConsumer {
     public void consumeVehicleLocation(VehicleData coordinateData) {
         log.debug("Processing location broadcast for vehicle: {}", coordinateData.getVehicleNo());
 
-        // 1. Send to Admins (Global track channel)
+        // Send to Admins (Global track channel)
         messagingTemplate.convertAndSend("/topic/tracking/all", coordinateData);
 
-        // 2. Fetch assigned territory from local cache first, fallback to Redis
+        // Fetch assigned territory from local cache first, fallback to Redis
         String tehsilId = localTehsilCache.computeIfAbsent(coordinateData.getVehicleNo(), this::fetchTehsilIdFromRedis);
 
-        // 3. Send to specific Supervisor Tehsil channel
+        // Send to specific Supervisor Tehsil channel
         if (tehsilId != null && !tehsilId.isEmpty()) {
             String supervisorTopic = "/topic/tracking/tehsil/" + tehsilId;
             messagingTemplate.convertAndSend(supervisorTopic, coordinateData);

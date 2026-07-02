@@ -27,12 +27,12 @@ public class TrackingConsumerMockTopic {
     public void consumeVehicleLocation(VehicleData coordinateData) {
         log.info("Processing location broadcast for vehicle: {}", coordinateData.getVehicleNo());
 
-        // 1. Send to Admins (Global track channel)
+        // Send to Admins (Global track channel)
         messagingTemplate.convertAndSend("/topic/tracking/all", coordinateData);
 
-        // 2. Fetch assigned territory from Redis to filter for Supervisors
-        String scheduleKey = "wtms:vehicle:" + coordinateData.getVehicleNo();
-        String tehsilId = (String) redisTemplate.opsForHash().get(scheduleKey, "tehsilId");
+        // Fetch assigned territory from Redis to filter for Supervisors
+        String key = "wtms:vehicle:" + coordinateData.getVehicleNo();
+        String tehsilId = (String) redisTemplate.opsForHash().get(key, "tehsilId");
 
         // 3. Send to specific Supervisor Tehsil channel
         if (tehsilId != null && !tehsilId.isEmpty()) {

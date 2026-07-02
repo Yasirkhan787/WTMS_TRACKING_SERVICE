@@ -23,7 +23,7 @@ public class TrackingPollingJob {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final RestClient restClient; // OPTIMIZATION: Modernized HTTP Client
+    private final RestClient restClient;
 
     @Value("${tracking.api.url}")
     private String thirdPartyApiUrl;
@@ -44,14 +44,13 @@ public class TrackingPollingJob {
                               KafkaTemplate<String, Object> kafkaTemplate) {
         this.redisTemplate = redisTemplate;
         this.kafkaTemplate = kafkaTemplate;
-        this.restClient = RestClient.builder().build(); // Initialize RestClient
+        this.restClient = RestClient.builder().build();
     }
 
     @Scheduled(fixedRate = 60000)
     public void pollThirdPartyTrackingApi() {
         log.info("Starting scheduled 3rd-party tracking API ingestion cycle...");
 
-        // OPTIMIZATION: Using SCAN instead of KEYS to prevent Redis blocking
         Set<String> activeVehicleKeys = redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
             Set<String> keys = new HashSet<>();
             Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().match("wtms:vehicle:*").count(100).build());
@@ -79,7 +78,7 @@ public class TrackingPollingJob {
         requestBody.put("wmc", "RWMC");
 
         try {
-            // OPTIMIZATION: Using RestClient for the API call
+
             try {
                 responseData = restClient.post()
                         .uri(thirdPartyApiUrl)
