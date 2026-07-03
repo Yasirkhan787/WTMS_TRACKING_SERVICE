@@ -23,7 +23,7 @@ public class UserEventConsumer {
 
     @KafkaListener(
             topics = "user-response-topic",
-            groupId = "schedule-group",
+            groupId = "tracking-group",
             containerFactory = "listenerContainerFactory"
     )
     public void handleUserResponse(UserResponseEventDto event) {
@@ -44,6 +44,7 @@ public class UserEventConsumer {
             } else {
                 map.put("tehsilId", "");
             }
+
             if ("SUPERVISOR".equals(event.getRole()) && event.getYardId() != null) {
                 map.put("yardId", event.getYardId().toString());
             } else {
